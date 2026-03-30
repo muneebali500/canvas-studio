@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canvas Studio</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body data-mobile-view="canvas">
+    <header class="topbar">
+      <div class="logo">✦ Canvas Studio</div>
+
+      <div class="toolbar">
+        <div class="topbar-center">
+          <div class="tool-group" aria-label="Drawing tools">
+            <button
+              class="tool-btn active"
+              id="tool-brush"
+              type="button"
+              title="Brush"
+              onclick="setTool('brush')"
+            >
+              🖌️
+            </button>
+            <button
+              class="tool-btn"
+              id="tool-pencil"
+              type="button"
+              title="Pencil"
+              onclick="setTool('pencil')"
+            >
+              ✏️
+            </button>
+            <button
+              class="tool-btn"
+              id="tool-eraser"
+              type="button"
+              title="Eraser"
+              onclick="setTool('eraser')"
+            >
+              🧽
+            </button>
+          </div>
+
+          <div class="separator"></div>
+
+          <label class="size-control">
+            <span>Size</span>
+            <input
+              type="range"
+              id="brushSize"
+              min="1"
+              max="60"
+              value="12"
+              oninput="updateSize()"
+            />
+            <strong id="sizeVal">12</strong>
+          </label>
+
+          <div class="separator"></div>
+
+          <div class="color-section" aria-label="Color palette">
+            <button
+              class="color-swatch active"
+              type="button"
+              style="background: #7c5cfc"
+              aria-label="Purple"
+              onclick="selectColor('#7c5cfc', this)"
+            ></button>
+            <button
+              class="color-swatch"
+              type="button"
+              style="background: #fc5c8a"
+              aria-label="Pink"
+              onclick="selectColor('#fc5c8a', this)"
+            ></button>
+            <button
+              class="color-swatch"
+              type="button"
+              style="background: #5cf0d2"
+              aria-label="Mint"
+              onclick="selectColor('#5cf0d2', this)"
+            ></button>
+            <button
+              class="color-swatch"
+              type="button"
+              style="background: #fca35c"
+              aria-label="Orange"
+              onclick="selectColor('#fca35c', this)"
+            ></button>
+            <label class="color-input-wrap" title="Custom color">
+              <input
+                type="color"
+                id="colorPicker"
+                value="#7c5cfc"
+                oninput="selectColor(this.value, null)"
+              />
+              <span class="color-input-icon">🎨</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <button class="action-btn btn-ghost" type="button" onclick="clearCanvas()">
+            🗑️ Clear
+          </button>
+          <button class="action-btn btn-ghost" type="button" disabled>
+            💾 Save
+          </button>
+          <button class="action-btn btn-ghost" type="button" disabled>
+            📂 Load
+          </button>
+          <button class="action-btn btn-primary" type="button" disabled>
+            ⬇️ Export
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <nav class="mobile-tabs" aria-label="Mobile workspace tabs">
+      <button
+        class="mobile-tab active"
+        type="button"
+        data-view="canvas"
+        aria-pressed="true"
+      >
+        Drawing Canvas
+      </button>
+      <button
+        class="mobile-tab"
+        type="button"
+        data-view="layers"
+        aria-pressed="false"
+      >
+        Layers
+      </button>
+    </nav>
+
+    <main class="main">
+      <aside class="sidebar">
+        <div class="sidebar-title">
+          <span>Layers</span>
+          <button class="layer-add-btn" type="button" disabled title="Add Layer">
+            +
+          </button>
+        </div>
+
+        <div class="layers-list">
+          <button class="layer-item active" type="button">
+            <canvas class="layer-thumb" width="32" height="24"></canvas>
+            <span class="layer-info">
+              <span class="layer-name">Background</span>
+            </span>
+            <span class="layer-controls">
+              <span class="layer-btn">👁</span>
+            </span>
+          </button>
+        </div>
+
+        <div class="layer-opacity">
+          <label>Opacity <span>100%</span></label>
+          <input type="range" min="0" max="100" value="100" disabled />
+        </div>
+      </aside>
+
+      <section class="canvas-wrap" aria-label="Drawing area">
+        <div class="canvas-container" id="canvasContainer">
+          <canvas id="drawingCanvas" width="900" height="600"></canvas>
+        </div>
+      </section>
+    </main>
+
+    <footer class="statusbar">
+      <span>📍 <span id="posX">0</span>, <span id="posY">0</span></span>
+      <span>🖌️ <span id="statusTool">brush</span></span>
+      <span>📐 <span id="statusSize">12</span>px</span>
+      <span>🎨 <span id="statusColor">#7c5cfc</span></span>
+      <span>📄 Layers: <span id="statusLayers">1</span></span>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
