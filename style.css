@@ -122,6 +122,22 @@ input {
   width: 1.5px;
 }
 
+.fill-toggle {
+  align-items: center;
+  color: var(--text-light);
+  cursor: pointer;
+  display: flex;
+  font-size: 11px;
+  font-weight: 700;
+  gap: 5px;
+  user-select: none;
+}
+
+.fill-toggle input {
+  accent-color: var(--accent1);
+  cursor: pointer;
+}
+
 .size-control {
   gap: 8px;
   padding: 6px 12px;

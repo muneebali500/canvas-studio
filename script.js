@@ -5,6 +5,8 @@ let currentTool = "brush";
 let currentColor = "#7c5cfc";
 let brushSize = 12;
 let isDrawing = false;
+let startX = 0;
+let startY = 0;
 let lastX = 0;
 let lastY = 0;
 let layerCounter = 0;
@@ -13,6 +15,7 @@ let activeLayerIndex = 0;
 const layers = [];
 const layerOpacity = {};
 const layerVisibility = {};
+const shapeTools = ["line", "rect", "circle", "triangle"];
 
 const container = document.getElementById("canvasContainer");
 const layersList = document.getElementById("layersList");
@@ -202,7 +205,8 @@ function setTool(tool) {
 
   document.getElementById(`tool-${tool}`).classList.add("active");
   document.getElementById("statusTool").textContent = tool;
-  interactiveCanvas.style.cursor = tool === "eraser" ? "cell" : "crosshair";
+  interactiveCanvas.style.cursor =
+    tool === "eraser" ? "cell" : tool === "fill" ? "copy" : "crosshair";
 }
 
 function updateSize() {
@@ -237,6 +241,60 @@ function applyStrokeStyle(ctx) {
   ctx.lineJoin = "round";
 }
 
+function applyShapeStyle(ctx, isPreview) {
+  ctx.globalAlpha = isPreview ? 0.58 : 1;
+  ctx.globalCompositeOperation = "source-over";
+  ctx.strokeStyle = currentColor;
+  ctx.fillStyle = currentColor;
+  ctx.lineWidth = Math.max(2, brushSize * 0.5);
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+}
+
+function drawShape(ctx, x1, y1, x2, y2, isPreview) {
+  const shouldFill = document.getElementById("fillShape").checked;
+
+  ctx.save();
+  applyShapeStyle(ctx, isPreview);
+  ctx.beginPath();
+
+  if (currentTool === "line") {
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  if (currentTool === "rect") {
+    const width = x2 - x1;
+    const height = y2 - y1;
+    if (shouldFill) ctx.fillRect(x1, y1, width, height);
+    ctx.strokeRect(x1, y1, width, height);
+  }
+
+  if (currentTool === "circle") {
+    const centerX = (x1 + x2) / 2;
+    const centerY = (y1 + y2) / 2;
+    const radiusX = Math.abs(x2 - x1) / 2;
+    const radiusY = Math.abs(y2 - y1) / 2;
+
+    ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
+    if (shouldFill) ctx.fill();
+    ctx.stroke();
+  }
+
+  if (currentTool === "triangle") {
+    const middleX = (x1 + x2) / 2;
+    ctx.moveTo(middleX, y1);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo(x1, y2);
+    ctx.closePath();
+    if (shouldFill) ctx.fill();
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
 function startDrawing(event) {
   event.preventDefault();
   const ctx = getActiveContext();
@@ -244,9 +302,15 @@ function startDrawing(event) {
 
   const position = getPointerPosition(event);
   isDrawing = true;
+  startX = position.x;
+  startY = position.y;
   lastX = position.x;
   lastY = position.y;
   updatePointerStatus(position.x, position.y);
+
+  if (shapeTools.includes(currentTool)) {
+    return;
+  }
 
   applyStrokeStyle(ctx);
   ctx.beginPath();
@@ -265,6 +329,14 @@ function draw(event) {
   const ctx = getActiveContext();
   if (!ctx) return;
 
+  if (shapeTools.includes(currentTool)) {
+    previewContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    drawShape(previewContext, startX, startY, position.x, position.y, true);
+    lastX = position.x;
+    lastY = position.y;
+    return;
+  }
+
   applyStrokeStyle(ctx);
   ctx.beginPath();
   ctx.moveTo(lastX, lastY);
@@ -281,6 +353,11 @@ function stopDrawing() {
   isDrawing = false;
   const ctx = getActiveContext();
   if (ctx) {
+    if (shapeTools.includes(currentTool)) {
+      drawShape(ctx, startX, startY, lastX, lastY, false);
+      previewContext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
+
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
   }
@@ -313,6 +390,10 @@ document.addEventListener("keydown", (event) => {
     b: "brush",
     p: "pencil",
     e: "eraser",
+    l: "line",
+    r: "rect",
+    c: "circle",
+    t: "triangle",
   };
 
   if (shortcuts[event.key]) {

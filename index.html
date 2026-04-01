@@ -46,6 +46,50 @@
             </button>
           </div>
 
+          <div class="tool-group" aria-label="Shape tools">
+            <button
+              class="tool-btn"
+              id="tool-line"
+              type="button"
+              title="Line"
+              onclick="setTool('line')"
+            >
+              ╱
+            </button>
+            <button
+              class="tool-btn"
+              id="tool-rect"
+              type="button"
+              title="Rectangle"
+              onclick="setTool('rect')"
+            >
+              ▭
+            </button>
+            <button
+              class="tool-btn"
+              id="tool-circle"
+              type="button"
+              title="Circle"
+              onclick="setTool('circle')"
+            >
+              ○
+            </button>
+            <button
+              class="tool-btn"
+              id="tool-triangle"
+              type="button"
+              title="Triangle"
+              onclick="setTool('triangle')"
+            >
+              △
+            </button>
+          </div>
+
+          <label class="fill-toggle">
+            <input type="checkbox" id="fillShape" checked />
+            Fill
+          </label>
+
           <div class="separator"></div>
 
           <label class="size-control">

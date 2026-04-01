@@ -18,8 +18,14 @@ build.
 - Added live layer thumbnails and layer count updates in the status bar.
 - Updated drawing actions so brush, pencil, eraser, and clear apply to the active layer.
 
+## Day 3 Progress
+
+- Added line, rectangle, circle, and triangle tools to the toolbar.
+- Added live shape previews on the interactive canvas while dragging.
+- Added filled and outlined shape rendering through the Fill toggle.
+- Connected shape commits to the active layer so layer controls continue to work.
+
 ## Planned Next Steps
 
-- Shape tools with preview rendering.
 - Undo/redo history.
 - Fill tool, save/load, PNG export, and final README screenshots.
