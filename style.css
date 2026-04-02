@@ -115,6 +115,16 @@ input {
   color: #ffffff;
 }
 
+.tool-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.tool-btn:disabled:hover {
+  background: transparent;
+  color: var(--text-light);
+}
+
 .separator {
   background: var(--border);
   border-radius: 2px;

@@ -15,12 +15,16 @@ let activeLayerIndex = 0;
 const layers = [];
 const layerOpacity = {};
 const layerVisibility = {};
+const undoStacks = {};
+const redoStacks = {};
 const shapeTools = ["line", "rect", "circle", "triangle"];
 
 const container = document.getElementById("canvasContainer");
 const layersList = document.getElementById("layersList");
 const opacitySlider = document.getElementById("opacitySlider");
 const opacityValue = document.getElementById("opacityVal");
+const undoButton = document.getElementById("undoBtn");
+const redoButton = document.getElementById("redoBtn");
 const mobileTabs = document.querySelectorAll(".mobile-tab");
 
 const interactiveCanvas = document.createElement("canvas");
@@ -68,16 +72,20 @@ function addLayer(name) {
   layers.push(layer);
   layerOpacity[id] = 1;
   layerVisibility[id] = true;
+  undoStacks[id] = [];
+  redoStacks[id] = [];
   activeLayerIndex = layers.length - 1;
 
   renderLayers();
   syncOpacityControl();
+  updateHistoryButtons();
 }
 
 function setActiveLayer(index) {
   activeLayerIndex = index;
   renderLayers();
   syncOpacityControl();
+  updateHistoryButtons();
 }
 
 function getActiveLayer() {
@@ -96,10 +104,13 @@ function deleteLayer(index) {
   removedLayer.canvas.remove();
   delete layerOpacity[removedLayer.id];
   delete layerVisibility[removedLayer.id];
+  delete undoStacks[removedLayer.id];
+  delete redoStacks[removedLayer.id];
 
   activeLayerIndex = Math.min(activeLayerIndex, layers.length - 1);
   renderLayers();
   syncOpacityControl();
+  updateHistoryButtons();
 }
 
 function toggleLayerVisibility(index) {
@@ -107,6 +118,61 @@ function toggleLayerVisibility(index) {
   layerVisibility[layer.id] = !layerVisibility[layer.id];
   layer.canvas.style.display = layerVisibility[layer.id] ? "block" : "none";
   renderLayers();
+}
+
+function saveSnapshot() {
+  const layer = getActiveLayer();
+  const ctx = getActiveContext();
+  if (!layer || !ctx) return;
+
+  const imageData = ctx.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  undoStacks[layer.id].push(imageData);
+
+  if (undoStacks[layer.id].length > 40) {
+    undoStacks[layer.id].shift();
+  }
+
+  redoStacks[layer.id] = [];
+  updateHistoryButtons();
+}
+
+function undo() {
+  const layer = getActiveLayer();
+  const ctx = getActiveContext();
+  if (!layer || !ctx || undoStacks[layer.id].length === 0) return;
+
+  const currentImage = ctx.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  redoStacks[layer.id].push(currentImage);
+
+  const previousImage = undoStacks[layer.id].pop();
+  ctx.putImageData(previousImage, 0, 0);
+
+  renderLayers();
+  updateHistoryButtons();
+}
+
+function redo() {
+  const layer = getActiveLayer();
+  const ctx = getActiveContext();
+  if (!layer || !ctx || redoStacks[layer.id].length === 0) return;
+
+  const currentImage = ctx.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  undoStacks[layer.id].push(currentImage);
+
+  const nextImage = redoStacks[layer.id].pop();
+  ctx.putImageData(nextImage, 0, 0);
+
+  renderLayers();
+  updateHistoryButtons();
+}
+
+function updateHistoryButtons() {
+  const layer = getActiveLayer();
+  const undoCount = layer ? undoStacks[layer.id].length : 0;
+  const redoCount = layer ? redoStacks[layer.id].length : 0;
+
+  undoButton.disabled = undoCount === 0;
+  redoButton.disabled = redoCount === 0;
 }
 
 function updateLayerOpacity() {
@@ -307,6 +373,7 @@ function startDrawing(event) {
   lastX = position.x;
   lastY = position.y;
   updatePointerStatus(position.x, position.y);
+  saveSnapshot();
 
   if (shapeTools.includes(currentTool)) {
     return;
@@ -362,14 +429,17 @@ function stopDrawing() {
     ctx.globalCompositeOperation = "source-over";
   }
   renderLayers();
+  updateHistoryButtons();
 }
 
 function clearCanvas() {
   const ctx = getActiveContext();
   if (!ctx) return;
 
+  saveSnapshot();
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   renderLayers();
+  updateHistoryButtons();
 }
 
 interactiveCanvas.addEventListener("mousedown", startDrawing);
@@ -385,6 +455,18 @@ interactiveCanvas.addEventListener("touchend", stopDrawing, { passive: false });
 
 document.addEventListener("keydown", (event) => {
   if (event.target.tagName === "INPUT") return;
+
+  if (event.ctrlKey && event.key.toLowerCase() === "z") {
+    event.preventDefault();
+    undo();
+    return;
+  }
+
+  if (event.ctrlKey && event.key.toLowerCase() === "y") {
+    event.preventDefault();
+    redo();
+    return;
+  }
 
   const shortcuts = {
     b: "brush",

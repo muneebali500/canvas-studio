@@ -25,7 +25,13 @@ build.
 - Added filled and outlined shape rendering through the Fill toggle.
 - Connected shape commits to the active layer so layer controls continue to work.
 
+## Day 4 Progress
+
+- Added undo and redo controls to the toolbar.
+- Added per-layer snapshot history for drawing, shapes, and clear actions.
+- Added keyboard shortcuts for Ctrl+Z and Ctrl+Y.
+- Improved drawing state cleanup so previews and active-layer history stay consistent.
+
 ## Planned Next Steps
 
-- Undo/redo history.
 - Fill tool, save/load, PNG export, and final README screenshots.
