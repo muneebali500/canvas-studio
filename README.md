@@ -32,6 +32,13 @@ build.
 - Added keyboard shortcuts for Ctrl+Z and Ctrl+Y.
 - Improved drawing state cleanup so previews and active-layer history stay consistent.
 
+## Day 5 Progress
+
+- Added the fill bucket tool with tolerance-based flood fill.
+- Added PNG export with visible layers composited in order.
+- Added JSON save and load for restoring layered drawings.
+- Added image import into the active layer.
+
 ## Planned Next Steps
 
-- Fill tool, save/load, PNG export, and final README screenshots.
+- Final responsive polish, README screenshots, and project preview images.

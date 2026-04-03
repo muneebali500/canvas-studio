@@ -25,6 +25,7 @@ const opacitySlider = document.getElementById("opacitySlider");
 const opacityValue = document.getElementById("opacityVal");
 const undoButton = document.getElementById("undoBtn");
 const redoButton = document.getElementById("redoBtn");
+const fileInput = document.getElementById("fileInput");
 const mobileTabs = document.querySelectorAll(".mobile-tab");
 
 const interactiveCanvas = document.createElement("canvas");
@@ -379,6 +380,14 @@ function startDrawing(event) {
     return;
   }
 
+  if (currentTool === "fill") {
+    floodFill(ctx, Math.round(position.x), Math.round(position.y), currentColor);
+    isDrawing = false;
+    renderLayers();
+    updateHistoryButtons();
+    return;
+  }
+
   applyStrokeStyle(ctx);
   ctx.beginPath();
   ctx.moveTo(position.x, position.y);
@@ -442,6 +451,239 @@ function clearCanvas() {
   updateHistoryButtons();
 }
 
+function floodFill(ctx, x, y, fillColor) {
+  if (x < 0 || y < 0 || x >= CANVAS_WIDTH || y >= CANVAS_HEIGHT) return;
+
+  const imageData = ctx.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  const data = imageData.data;
+  const startIndex = (y * CANVAS_WIDTH + x) * 4;
+  const target = [
+    data[startIndex],
+    data[startIndex + 1],
+    data[startIndex + 2],
+    data[startIndex + 3],
+  ];
+  const replacement = hexToRgb(fillColor);
+
+  if (!replacement || colorsAreClose(target, replacement, 0)) return;
+
+  const visited = new Uint8Array(CANVAS_WIDTH * CANVAS_HEIGHT);
+  const stack = [[x, y]];
+
+  while (stack.length) {
+    const [currentX, currentY] = stack.pop();
+    if (
+      currentX < 0 ||
+      currentY < 0 ||
+      currentX >= CANVAS_WIDTH ||
+      currentY >= CANVAS_HEIGHT
+    ) {
+      continue;
+    }
+
+    const pixelIndex = currentY * CANVAS_WIDTH + currentX;
+    if (visited[pixelIndex]) continue;
+    visited[pixelIndex] = 1;
+
+    const dataIndex = pixelIndex * 4;
+    const currentColorData = [
+      data[dataIndex],
+      data[dataIndex + 1],
+      data[dataIndex + 2],
+      data[dataIndex + 3],
+    ];
+
+    if (!colorsAreClose(currentColorData, target, 30)) continue;
+
+    data[dataIndex] = replacement[0];
+    data[dataIndex + 1] = replacement[1];
+    data[dataIndex + 2] = replacement[2];
+    data[dataIndex + 3] = 255;
+
+    stack.push(
+      [currentX + 1, currentY],
+      [currentX - 1, currentY],
+      [currentX, currentY + 1],
+      [currentX, currentY - 1],
+    );
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+}
+
+function colorsAreClose(first, second, tolerance) {
+  return (
+    Math.abs(first[0] - second[0]) <= tolerance &&
+    Math.abs(first[1] - second[1]) <= tolerance &&
+    Math.abs(first[2] - second[2]) <= tolerance &&
+    Math.abs(first[3] - second[3]) <= tolerance
+  );
+}
+
+function hexToRgb(hex) {
+  const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!match) return null;
+
+  return [
+    parseInt(match[1], 16),
+    parseInt(match[2], 16),
+    parseInt(match[3], 16),
+    255,
+  ];
+}
+
+function createCompositeCanvas(includeWhiteBackground) {
+  const output = document.createElement("canvas");
+  output.width = CANVAS_WIDTH;
+  output.height = CANVAS_HEIGHT;
+
+  const outputContext = output.getContext("2d");
+  if (includeWhiteBackground) {
+    outputContext.fillStyle = "#ffffff";
+    outputContext.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  }
+
+  layers.forEach((layer) => {
+    if (!layerVisibility[layer.id]) return;
+
+    outputContext.globalAlpha = layerOpacity[layer.id];
+    outputContext.drawImage(layer.canvas, 0, 0);
+  });
+
+  outputContext.globalAlpha = 1;
+  return output;
+}
+
+function downloadFile(fileName, href) {
+  const link = document.createElement("a");
+  link.download = fileName;
+  link.href = href;
+  link.click();
+}
+
+function exportPNG() {
+  const output = createCompositeCanvas(true);
+  downloadFile(`canvas-studio-${Date.now()}.png`, output.toDataURL("image/png"));
+}
+
+function saveDrawing() {
+  const drawingData = {
+    version: 1,
+    width: CANVAS_WIDTH,
+    height: CANVAS_HEIGHT,
+    layers: layers.map((layer) => ({
+      name: layer.name,
+      opacity: layerOpacity[layer.id],
+      visible: layerVisibility[layer.id],
+      data: layer.canvas.toDataURL("image/png"),
+    })),
+  };
+
+  const blob = new Blob([JSON.stringify(drawingData, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+
+  downloadFile(`canvas-studio-${Date.now()}.json`, url);
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function loadDrawing() {
+  fileInput.click();
+}
+
+function resetLayers() {
+  layers.splice(0, layers.length);
+  layerCounter = 0;
+  activeLayerIndex = 0;
+  container.querySelectorAll("canvas:not(:last-child)").forEach((layerCanvas) => {
+    layerCanvas.remove();
+  });
+
+  Object.keys(layerOpacity).forEach((key) => delete layerOpacity[key]);
+  Object.keys(layerVisibility).forEach((key) => delete layerVisibility[key]);
+  Object.keys(undoStacks).forEach((key) => delete undoStacks[key]);
+  Object.keys(redoStacks).forEach((key) => delete redoStacks[key]);
+}
+
+function handleLoad(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.type === "application/json" || file.name.endsWith(".json")) {
+    loadProjectFile(file);
+  } else if (file.type.startsWith("image/")) {
+    loadImageFile(file);
+  }
+
+  event.target.value = "";
+}
+
+function loadProjectFile(file) {
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      resetLayers();
+
+      data.layers.forEach((savedLayer) => {
+        addLayer(savedLayer.name);
+        const layer = getActiveLayer();
+
+        layerOpacity[layer.id] = savedLayer.opacity ?? 1;
+        layerVisibility[layer.id] = savedLayer.visible ?? true;
+        layer.canvas.style.opacity = layerOpacity[layer.id];
+        layer.canvas.style.display = layerVisibility[layer.id] ? "block" : "none";
+
+        const image = new Image();
+        image.onload = () => {
+          layer.canvas.getContext("2d").drawImage(image, 0, 0);
+          renderLayers();
+        };
+        image.src = savedLayer.data;
+      });
+
+      if (!layers.length) addLayer("Background");
+      activeLayerIndex = layers.length - 1;
+      syncOpacityControl();
+      renderLayers();
+      updateHistoryButtons();
+    } catch (error) {
+      window.alert("This drawing file could not be loaded.");
+    }
+  };
+
+  reader.readAsText(file);
+}
+
+function loadImageFile(file) {
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    const image = new Image();
+
+    image.onload = () => {
+      const ctx = getActiveContext();
+      if (!ctx) return;
+
+      saveSnapshot();
+      const scale = Math.min(
+        CANVAS_WIDTH / image.width,
+        CANVAS_HEIGHT / image.height,
+        1,
+      );
+      ctx.drawImage(image, 0, 0, image.width * scale, image.height * scale);
+      renderLayers();
+      updateHistoryButtons();
+    };
+
+    image.src = reader.result;
+  };
+
+  reader.readAsDataURL(file);
+}
+
 interactiveCanvas.addEventListener("mousedown", startDrawing);
 interactiveCanvas.addEventListener("mousemove", draw);
 interactiveCanvas.addEventListener("mouseup", stopDrawing);
@@ -472,6 +714,7 @@ document.addEventListener("keydown", (event) => {
     b: "brush",
     p: "pencil",
     e: "eraser",
+    f: "fill",
     l: "line",
     r: "rect",
     c: "circle",

@@ -44,6 +44,15 @@
             >
               🧽
             </button>
+            <button
+              class="tool-btn"
+              id="tool-fill"
+              type="button"
+              title="Fill"
+              onclick="setTool('fill')"
+            >
+              🪣
+            </button>
           </div>
 
           <div class="tool-group" aria-label="Shape tools">
@@ -177,13 +186,25 @@
           <button class="action-btn btn-ghost" type="button" onclick="clearCanvas()">
             🗑️ Clear
           </button>
-          <button class="action-btn btn-ghost" type="button" disabled>
+          <button
+            class="action-btn btn-ghost"
+            type="button"
+            onclick="saveDrawing()"
+          >
             💾 Save
           </button>
-          <button class="action-btn btn-ghost" type="button" disabled>
+          <button
+            class="action-btn btn-ghost"
+            type="button"
+            onclick="loadDrawing()"
+          >
             📂 Load
           </button>
-          <button class="action-btn btn-primary" type="button" disabled>
+          <button
+            class="action-btn btn-primary"
+            type="button"
+            onclick="exportPNG()"
+          >
             ⬇️ Export
           </button>
         </div>
@@ -252,6 +273,14 @@
       <span>🎨 <span id="statusColor">#7c5cfc</span></span>
       <span>📄 Layers: <span id="statusLayers">1</span></span>
     </footer>
+
+    <input
+      type="file"
+      id="fileInput"
+      accept="image/*,.json"
+      onchange="handleLoad(event)"
+      hidden
+    />
 
     <script src="script.js"></script>
   </body>
