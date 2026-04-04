@@ -1,8 +1,14 @@
 # Canvas Studio
 
-Canvas Studio is a responsive browser-based drawing app with a clean workspace,
-mobile Canvas/Layers tabs, and a layered editor experience planned across the
-build.
+Canvas Studio is a responsive browser-based drawing app with a layered editing
+workspace, shape tools, undo/redo history, file import, JSON save/load, PNG
+export, and mobile tabs for switching between the canvas and layers panel.
+
+## Preview
+
+![Desktop Preview](images/desktop-view.png)
+
+![Mobile Preview](images/mobile-view.png)
 
 ## Day 1 Progress
 
@@ -39,6 +45,17 @@ build.
 - Added JSON save and load for restoring layered drawings.
 - Added image import into the active layer.
 
-## Planned Next Steps
+## Day 6 Progress
 
-- Final responsive polish, README screenshots, and project preview images.
+- Restored the complete color palette and original brush-size range.
+- Added final toolbar polish and desktop tooltips.
+- Added project preview screenshots for README.
+- Completed final responsive checks for the mobile Canvas/Layers workflow.
+
+## Features
+
+- Brush, pencil, eraser, fill, line, rectangle, circle, and triangle tools.
+- Multi-layer canvas with opacity, visibility, deletion, and thumbnails.
+- Per-layer undo/redo support.
+- JSON save/load, image import, and PNG export.
+- Responsive mobile layout with dedicated Canvas and Layers tabs.
