@@ -12,7 +12,19 @@
   </head>
   <body data-mobile-view="canvas">
     <header class="topbar">
-      <div class="logo">✦ Canvas Studio</div>
+      <div class="brand-row">
+        <div class="logo">✦ Canvas Studio</div>
+        <button
+          class="info-btn"
+          id="info-btn"
+          type="button"
+          title="About Canvas Studio"
+          aria-label="About Canvas Studio"
+          onclick="showPopup()"
+        >
+          i
+        </button>
+      </div>
 
       <div class="toolbar">
         <div class="topbar-center">
@@ -295,6 +307,138 @@
       onchange="handleLoad(event)"
       hidden
     />
+
+    <div class="popup-overlay" id="popup-overlay" aria-hidden="true">
+      <div
+        class="popup-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="popup-title"
+      >
+        <div class="popup-header">
+          <h2 id="popup-title">🎨 Canvas Studio - Layered Drawing App</h2>
+          <p class="popup-subtitle">
+            Draw, layer, edit, save, and export artwork directly in the browser.
+          </p>
+        </div>
+
+        <div class="popup-section">
+          <h3>📖 What It Does</h3>
+          <p>
+            Canvas Studio is a responsive browser drawing app built with HTML5
+            Canvas, CSS, and Vanilla JavaScript. It gives users a compact art
+            workspace with multiple drawing tools, layer controls, undo/redo,
+            file import, project save/load, PNG export, and a mobile-friendly
+            Canvas/Layers tab layout.
+          </p>
+        </div>
+
+        <div class="popup-section">
+          <h3>🎮 How to Use</h3>
+          <ul>
+            <li>Select brush, pencil, eraser, fill, or a shape tool</li>
+            <li>Adjust brush size and choose a color from the palette</li>
+            <li>Add layers and switch the active layer from the sidebar</li>
+            <li>Toggle layer visibility or change opacity for lighter effects</li>
+            <li>Use undo/redo for changes on the active layer</li>
+            <li>Save your artwork as JSON and reload it later</li>
+            <li>Import an image onto the active layer</li>
+            <li>Export the final visible artwork as a PNG file</li>
+          </ul>
+        </div>
+
+        <div class="popup-section">
+          <h3>✨ Key Features</h3>
+          <div class="highlight-box">
+            <ul>
+              <li>
+                <strong>Drawing Tools:</strong> Brush, pencil, eraser, fill,
+                line, rectangle, circle, and triangle tools
+              </li>
+              <li>
+                <strong>Layer System:</strong> Add, select, delete, hide, and
+                adjust opacity for separate canvas layers
+              </li>
+              <li>
+                <strong>Live Shape Preview:</strong> Preview shapes while
+                dragging before committing them to the active layer
+              </li>
+              <li>
+                <strong>History Controls:</strong> Undo and redo changes per
+                layer with keyboard shortcuts
+              </li>
+              <li>
+                <strong>File Workflow:</strong> Save/load layered JSON projects,
+                import images, and export PNG artwork
+              </li>
+              <li>
+                <strong>Responsive UI:</strong> Dedicated mobile tabs for Canvas
+                and Layers on screens 767px and below
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="popup-section">
+          <h3>🚀 Key JavaScript Concepts</h3>
+          <div class="highlight-box">
+            <ul>
+              <li>
+                <strong>Canvas API:</strong> Drawing strokes, shapes, previews,
+                compositing, image import, and PNG export
+              </li>
+              <li>
+                <strong>State Management:</strong> Active tool, color, brush
+                size, active layer, visibility, opacity, and history stacks
+              </li>
+              <li>
+                <strong>DOM Rendering:</strong> Dynamic layer list, thumbnails,
+                buttons, status updates, and popup controls
+              </li>
+              <li>
+                <strong>FileReader API:</strong> Loading image files and saved
+                JSON drawing projects
+              </li>
+              <li>
+                <strong>Touch Events:</strong> Mobile drawing support with
+                touch-to-pointer coordinate mapping
+              </li>
+              <li>
+                <strong>Keyboard Shortcuts:</strong> Fast tool switching and
+                undo/redo controls
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="popup-section">
+          <h3>🎨 Design Features</h3>
+          <ul>
+            <li>Compact creative-tool interface with soft purple accents</li>
+            <li>Layer sidebar inspired by lightweight design editors</li>
+            <li>Checkerboard canvas background for a transparent-workspace feel</li>
+            <li>Gradient primary actions, circular swatches, and hover tooltips</li>
+            <li>Responsive toolbar and mobile Canvas/Layers tab navigation</li>
+          </ul>
+        </div>
+
+        <div class="popup-section">
+          <h3>💻 Technologies Used</h3>
+          <div class="tech-tags">
+            <span class="tech-tag">HTML5</span>
+            <span class="tech-tag">CSS3</span>
+            <span class="tech-tag">Vanilla JavaScript</span>
+            <span class="tech-tag">Canvas API</span>
+            <span class="tech-tag">FileReader API</span>
+            <span class="tech-tag">Responsive Design</span>
+          </div>
+        </div>
+
+        <button class="close-popup-btn" id="close-popup-btn" onclick="closePopup()">
+          Start Drawing!
+        </button>
+      </div>
+    </div>
 
     <script src="script.js"></script>
   </body>

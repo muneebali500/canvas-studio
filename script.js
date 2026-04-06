@@ -52,6 +52,26 @@ mobileTabs.forEach((tab) => {
   tab.addEventListener("click", () => setMobileView(tab.dataset.view));
 });
 
+function showPopup() {
+  const popupOverlay = document.getElementById("popup-overlay");
+  popupOverlay.classList.add("active");
+  popupOverlay.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closePopup() {
+  const popupOverlay = document.getElementById("popup-overlay");
+  popupOverlay.classList.remove("active");
+  popupOverlay.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+}
+
+document.getElementById("popup-overlay").addEventListener("click", (event) => {
+  if (event.target === document.getElementById("popup-overlay")) {
+    closePopup();
+  }
+});
+
 function createLayerCanvas() {
   const layerCanvas = document.createElement("canvas");
   layerCanvas.width = CANVAS_WIDTH;
@@ -698,6 +718,11 @@ interactiveCanvas.addEventListener("touchend", stopDrawing, { passive: false });
 document.addEventListener("keydown", (event) => {
   if (event.target.tagName === "INPUT") return;
 
+  if (event.key === "Escape") {
+    closePopup();
+    return;
+  }
+
   if (event.ctrlKey && event.key.toLowerCase() === "z") {
     event.preventDefault();
     undo();
@@ -729,3 +754,4 @@ document.addEventListener("keydown", (event) => {
 addLayer("Background");
 addLayer("Layer 2");
 setActiveLayer(1);
+showPopup();
